@@ -3,6 +3,7 @@ import h5py
 import numpy as np
 import os
 import requests
+import shutil
 import tarfile
 
 
@@ -17,14 +18,17 @@ class PrepareDataset():
         self.X_data_shape = (100, 100, 1)
         self.y_data_shape = (5,)
 
+    def cleanup(self, tmpdir):
+        shutil.rmtree(tmpdir)
+
     def download_data(self):
         train_dataset = self.config.get('source', 'TrainDataset')
         test_dataset = self.config.get('source', 'TestDataset')
-        tmp_directory = self.config.get('store', 'TmpDirectory')
-        save_directory = self.config.get('store', 'SaveDirectory')
+        tmp_dir = self.config.get('store', 'TmpDirectory')
+        save_dir = self.config.get('store', 'SaveDirectory')
 
-        train_path = '%s/train.tar.gz' % tmp_directory
-        test_path = '%s/test.tar.gz' % tmp_directory
+        train_path = '%s/train.tar.gz' % tmp_dir
+        test_path = '%s/test.tar.gz' % tmp_dir
 
         # Fetch files from url
         self.fetch(train_dataset, train_path)
@@ -36,6 +40,8 @@ class PrepareDataset():
 
         self.process_data('%s/train' % tmp_directory,
                           save_directory, 'train')
+
+        self.cleanup(tmp_dir)
 
     def fetch(self, url, store):
         r = requests.get(url)
