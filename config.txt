@@ -1,0 +1,7 @@
+[store]
+SaveDirectory =
+TmpDirectory =
+
+[source]
+TrainDataset = https://zenodo.org/record/3602260/files/hls4ml_LHCjet_150p_train.tar.gz
+TestDataset = https://zenodo.org/record/3602260/files/hls4ml_LHCjet_150p_val.tar.gz
