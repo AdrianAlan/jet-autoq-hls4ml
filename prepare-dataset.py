@@ -21,6 +21,10 @@ class PrepareDataset():
     def cleanup(self, tmpdir):
         shutil.rmtree(tmpdir)
 
+    def create_directory(self, directory):
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+
     def download_data(self):
         train_dataset = self.config.get('source', 'TrainDataset')
         test_dataset = self.config.get('source', 'TestDataset')
@@ -29,6 +33,10 @@ class PrepareDataset():
 
         train_path = '%s/train.tar.gz' % tmp_dir
         test_path = '%s/test.tar.gz' % tmp_dir
+
+        # Creating directories
+        self.create_directory(tmp_dir)
+        self.create_directory(save_dir)
 
         # Fetch files from url
         self.fetch(train_dataset, train_path)
