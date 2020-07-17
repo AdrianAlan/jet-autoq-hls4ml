@@ -73,7 +73,7 @@ class PrepareDataset():
         X_set = 'X_%s' % set_type
         y_set = 'y_%s' % set_type
 
-        with h5py.File('%s/jetimg.h5' % out_dir, 'w') as h5:
+        with h5py.File('%s/jetimg.h5' % out_dir, 'a') as h5:
             row = 0
             for fname in os.listdir(in_dir):
                 infile = os.path.join(in_dir, fname)
