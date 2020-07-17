@@ -105,5 +105,6 @@ class PrepareDataset():
         tar.close()
 
 
-pd = PrepareDataset(r'./config.txt')
-pd.download_data()
+if __name__ == '__main__':
+    pd = PrepareDataset(r'./config.txt')
+    pd.download_data()
