@@ -2,7 +2,19 @@ import argparse
 import h5py
 import math
 import numpy as np
+import os
 import tensorflow as tf
+
+from tensorflow.keras.models import Model, Sequential
+from tensorflow.keras.layers import (
+    Activation,
+    BatchNormalization,
+    Conv2D,
+    Dense,
+    Dropout,
+    Flatten,
+    Input,
+    MaxPooling2D)
 
 
 class DataGenerator(tf.compat.v2.keras.utils.Sequence):
@@ -61,6 +73,39 @@ class DataGenerator(tf.compat.v2.keras.utils.Sequence):
         return y
 
 
+def build_model(input_shape=(100, 100, 1), drate=.25):
+
+    in_image = Input(shape=(input_shape))
+
+    x = Conv2D(14,
+               kernel_size=6,
+               data_format="channels_last",
+               strides=(1, 1),
+               padding="same")(in_image)
+    x = BatchNormalization()(x)
+    x = Activation('relu')(x)
+    x = MaxPooling2D(pool_size=(2, 2))(x)
+    x = Dropout(drate)(x)
+    x = Conv2D(6,
+               kernel_size=4,
+               data_format="channels_last",
+               strides=(1, 1),
+               padding="same")(x)
+    x = BatchNormalization()(x)
+    x = Activation('relu')(x)
+    x = MaxPooling2D(pool_size=(2, 2))(x)
+    x = Dropout(drate)(x)
+    x = Flatten()(x)
+    x = Dense(250, activation='relu')(x)
+    output = Dense(5, activation='softmax')(x)
+
+    return Model(inputs=in_image, outputs=output)
+
+
+def save_model(model, path):
+    model.save(path)
+
+
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser("Train the teacher's network")
@@ -76,6 +121,8 @@ if __name__ == '__main__':
     parser.add_argument('-w', '--workers', type=float, default='4',
                         help='Number of workers', dest='workers')
     args = parser.parse_args()
+
+    os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
     h5 = h5py.File(args.dataset_path, 'r')
     X_train = h5['X_train']
@@ -94,4 +141,12 @@ if __name__ == '__main__':
                                   out_dim=args.n_classes,
                                   shuffle=True,
                                   validation=True)
+    model = build_model()
+    model.compile(loss='categorical_crossentropy', optimizer='adam')
+    model.fit(train_generator,
+              steps_per_epoch=len(train_generator),
+              epochs=args.epochs,
+              validation_data=val_generator,
+              validation_steps=len(val_generator))
+    save_model(model, args.save_path)
     h5.close()
