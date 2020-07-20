@@ -1,7 +1,15 @@
 [store]
-SaveDirectory =
-TmpDirectory =
+SaveDirectory = ./jetimg
+TmpDirectory = ./tmp
+TmpTrainPath = ${TmpDirectory}/train.tar.gz
+TmpTestPath = ${TmpDirectory}/test.tar.gz
 
 [source]
 TrainDataset = https://zenodo.org/record/3602260/files/hls4ml_LHCjet_150p_train.tar.gz
 TestDataset = https://zenodo.org/record/3602260/files/hls4ml_LHCjet_150p_val.tar.gz
+TrainDirectory = ${store:TmpDirectory}/train
+TestDirectory = ${store:TmpDirectory}/val
+
+[data]
+XShape = (100,100,1)
+yShape = (5)
