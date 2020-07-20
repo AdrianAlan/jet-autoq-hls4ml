@@ -22,15 +22,15 @@ class PrepareDataset():
         if not os.path.exists(directory):
             os.makedirs(directory)
 
-    def download_data(self):
+    def execute(self):
 
         # Creating directories
         self.create_directory(self.tmp_dir)
         self.create_directory(self.save_dir)
 
         # Fetch files from url
-        self.fetch(self.train_dataset, self.tmp_train_path)
-        self.fetch(self.test_dataset, self.tmp_test_path)
+        self.fetch_data(self.train_dataset, self.tmp_train_path)
+        self.fetch_data(self.test_dataset, self.tmp_test_path)
 
         # Unarchive fetched files
         self.unarchive(self.tmp_train_path, self.tmp_dir)
@@ -43,7 +43,7 @@ class PrepareDataset():
 
         self.cleanup(self.tmp_dir)
 
-    def fetch(self, url, store):
+    def fetch_data(self, url, store):
         r = requests.get(url)
         with open(store, 'wb') as f:
             f.write(r.content)
@@ -107,4 +107,4 @@ class PrepareDataset():
 
 if __name__ == '__main__':
     pd = PrepareDataset(r'./config.txt')
-    pd.download_data()
+    pd.execute()
