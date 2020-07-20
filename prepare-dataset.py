@@ -1,5 +1,6 @@
 import h5py
 import numpy as np
+import logging
 import os
 import requests
 import shutil
@@ -24,24 +25,31 @@ class PrepareDataset():
 
     def execute(self):
 
-        # Creating directories
+        logging.basicConfig(level=logging.INFO)
+
+        logging.info('Creating working directories')
         self.create_directory(self.tmp_dir)
         self.create_directory(self.save_dir)
 
-        # Fetch files from url
+        logging.info('Fetching the dataset 1/2')
         self.fetch_data(self.train_dataset, self.tmp_train_path)
+        logging.info('Fetching the dataset 2/2')
         self.fetch_data(self.test_dataset, self.tmp_test_path)
 
-        # Unarchive fetched files
+        logging.info('Unarchiving working files')
         self.unarchive(self.tmp_train_path, self.tmp_dir)
         self.unarchive(self.tmp_test_path, self.tmp_dir)
 
+        logging.info('Processing data')
         self.process_data(self.train_dataset_dir, self.save_dir, 'train',
                           self.X_data_shape, self.y_data_shape)
         self.process_data(self.test_dataset_dir, self.save_dir, 'test',
                           self.X_data_shape, self.y_data_shape)
 
+        logging.info('Final cleaning')
         self.cleanup(self.tmp_dir)
+
+        logging.info('Done')
 
     def fetch_data(self, url, store):
         r = requests.get(url)
