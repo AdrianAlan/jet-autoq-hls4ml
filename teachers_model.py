@@ -1,3 +1,4 @@
+import argparse
 import h5py
 import math
 import numpy as np
@@ -61,6 +62,20 @@ class DataGenerator(tf.compat.v2.keras.utils.Sequence):
 
 
 if __name__ == '__main__':
+
+    parser = argparse.ArgumentParser("Train the teacher's network")
+    parser.add_argument('dataset_path', type=str, help='Path to dataset')
+    parser.add_argument('save_path', type=str, help='Path to trained model')
+    parser.add_argument('-c', '--classes', type=int, default=5,
+                        help='Number of classes', dest='n_classes')
+    parser.add_argument('-b', '--batch-size', type=int, default=32,
+                        help='Number of training samples in a batch',
+                        dest='batch_size')
+    parser.add_argument('-e', '--epochs', type=int, default=20,
+                        help='Number of training epochs', dest='epochs')
+    parser.add_argument('-w', '--workers', type=float, default='4',
+                        help='Number of workers', dest='workers')
+    args = parser.parse_args()
 
     h5 = h5py.File(args.dataset_path, 'r')
     X_train = h5['X_train']
