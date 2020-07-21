@@ -34,7 +34,7 @@ class DataGenerator(tf.compat.v2.keras.utils.Sequence):
 
         size = len(self.X_data)
         train_size = 1 - val_size
-        if validation:
+        if not validation:
             self.indices = np.arange(math.ceil(size*train_size))
         else:
             self.indices = np.arange(math.ceil(size*train_size), size)
