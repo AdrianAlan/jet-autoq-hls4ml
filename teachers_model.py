@@ -7,6 +7,7 @@ import os
 import tensorflow as tf
 
 from sklearn.metrics import roc_curve, auc
+from tensorflow.keras.callbacks import ModelCheckpoint, ReduceLROnPlateau
 from tensorflow.keras.models import Model, Sequential, load_model
 from tensorflow.keras.layers import (
     Activation,
@@ -107,10 +108,6 @@ def build_model(input_shape=(100, 100, 1), drate=.25):
     return Model(inputs=in_image, outputs=output)
 
 
-def save_model(model, path):
-    model.save(path)
-
-
 def evaluate(model, X_test, y_test, save_path='evaluation.png'):
 
     labels = ['gluon', 'quark', 'W', 'Z', 'top']
@@ -145,6 +142,9 @@ if __name__ == '__main__':
                         dest='batch_size')
     parser.add_argument('-e', '--epochs', type=int, default=20,
                         help='Number of training epochs', dest='epochs')
+    parser.add_argument('-p', '--patience', type=int, default=2,
+                        help='LR reduction callback patience',
+                        dest='patience')
     parser.add_argument('-w', '--workers', type=int, default='4',
                         help='Number of workers', dest='workers')
     args = parser.parse_args()
@@ -175,9 +175,10 @@ if __name__ == '__main__':
               epochs=args.epochs,
               validation_data=val_generator,
               validation_steps=len(val_generator),
+              callbacks=[ModelCheckpoint(args.save_path),
+                         ReduceLROnPlateau(patience=args.patience)],
               use_multiprocessing=True,
               workers=args.workers)
-    save_model(model, args.save_path)
 
     # Evaluate the model
     model = load_model(args.save_path)
