@@ -145,7 +145,7 @@ if __name__ == '__main__':
                         dest='batch_size')
     parser.add_argument('-e', '--epochs', type=int, default=20,
                         help='Number of training epochs', dest='epochs')
-    parser.add_argument('-w', '--workers', type=float, default='4',
+    parser.add_argument('-w', '--workers', type=int, default='4',
                         help='Number of workers', dest='workers')
     args = parser.parse_args()
 
@@ -174,7 +174,9 @@ if __name__ == '__main__':
               steps_per_epoch=len(train_generator),
               epochs=args.epochs,
               validation_data=val_generator,
-              validation_steps=len(val_generator))
+              validation_steps=len(val_generator),
+              use_multiprocessing=True,
+              workers=args.workers)
     save_model(model, args.save_path)
 
     # Evaluate the model
