@@ -1,11 +1,13 @@
 import argparse
 import h5py
 import math
+import matplotlib.pyplot as plt
 import numpy as np
 import os
 import tensorflow as tf
 
-from tensorflow.keras.models import Model, Sequential
+from sklearn.metrics import roc_curve, auc
+from tensorflow.keras.models import Model, Sequential, load_model
 from tensorflow.keras.layers import (
     Activation,
     BatchNormalization,
@@ -53,8 +55,11 @@ class DataGenerator(tf.compat.v2.keras.utils.Sequence):
     def __getitem__(self, index):
         bx = self.indices[index*self.batch_size:(index+1)*self.batch_size]
         X = self._generate_x(bx)
-        y = self._generate_y(bx)
-        return X, y
+        if self.y_data is not None:
+            y = self._generate_y(bx)
+            return X, y
+        else:
+            return X
 
     def on_epoch_end(self):
         if self.shuffle:
@@ -106,6 +111,28 @@ def save_model(model, path):
     model.save(path)
 
 
+def evaluate(model, X_test, y_test, save_path='evaluation.png'):
+
+    labels = ['gluon', 'quark', 'W', 'Z', 'top']
+    predicted = model.predict(X_test)
+
+    fig = plt.figure()
+    for i, label in enumerate(labels):
+        fpr, tpr, _ = roc_curve(y_test[:, i], predicted[:, i])
+        plt.plot(tpr, fpr,
+                 label='%s tagger, auc = %.1f%%' % (label, auc(fpr, tpr)*100))
+
+    plt.semilogy()
+    plt.xlabel("sig. efficiency")
+    plt.ylabel("bkg. mistag rate")
+    plt.ylim(0.000001, 1)
+    plt.grid(True)
+    plt.legend(loc='lower right')
+
+    fig.savefig(save_path)
+    plt.close(fig)
+
+
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser("Train the teacher's network")
@@ -149,4 +176,17 @@ if __name__ == '__main__':
               validation_data=val_generator,
               validation_steps=len(val_generator))
     save_model(model, args.save_path)
+
+    # Evaluate the model
+    model = load_model(args.save_path)
+    X_test = h5['X_test']
+    y_test = h5['y_test']
+    test_generator = DataGenerator(X_test, None,
+                                   batch_size=100,
+                                   in_dim=in_shape,
+                                   out_dim=args.n_classes,
+                                   shuffle=False,
+                                   val_size=0.0)
+    evaluate(model, test_generator, y_test[()])
+
     h5.close()
