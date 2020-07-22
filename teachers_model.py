@@ -24,7 +24,8 @@ from tensorflow.keras.layers import (
 class DataGenerator(tf.compat.v2.keras.utils.Sequence):
 
     def __init__(self, X_data, y_data, batch_size, in_dim, out_dim,
-                 shuffle=True, validation=False, val_size=0.2):
+                 shuffle=True, validation=False,
+                 train_size= 0.8, val_size=0.2):
 
         self.batch_size = batch_size
         self.X_data = X_data
@@ -34,12 +35,13 @@ class DataGenerator(tf.compat.v2.keras.utils.Sequence):
         self.shuffle = shuffle
         self.n = 0
 
-        size = len(self.X_data)
-        train_size = 1 - val_size
+        full_size = len(self.X_data)
         if not validation:
-            self.indices = np.arange(math.ceil(size*train_size))
+            train_size = self.get_size(train_size, full_size)
+            self.indices = np.arange(train_size)
         else:
-            self.indices = np.arange(math.ceil(size*train_size), size)
+            val_size = full_size - self.get_size(val_size, full_size)
+            self.indices = np.arange(val_size, full_size)
 
         self.on_epoch_end()
 
@@ -78,6 +80,12 @@ class DataGenerator(tf.compat.v2.keras.utils.Sequence):
         for i, d in enumerate(indices):
             y[i] = self.y_data[d]
         return y
+
+    def get_size(self, x, size):
+        if isinstance(x, float):
+            return math.ceil(x*size)
+        else:
+            return x
 
 
 def build_model(input_shape=(100, 100, 1), drate=.25):
@@ -162,6 +170,7 @@ if __name__ == '__main__':
                                     batch_size=args.batch_size,
                                     in_dim=in_shape,
                                     out_dim=args.n_classes,
+                                    train_size=0.1,
                                     shuffle=True)
 
     val_generator = DataGenerator(X_train, y_train,
