@@ -8,6 +8,7 @@ import tensorflow as tf
 
 from sklearn.metrics import roc_curve, auc
 from tensorflow.keras.callbacks import ModelCheckpoint, ReduceLROnPlateau
+from tensorflow.keras.metrics import CategoricalAccuracy
 from tensorflow.keras.models import Model, Sequential, load_model
 from tensorflow.keras.layers import (
     Activation,
@@ -170,7 +171,9 @@ if __name__ == '__main__':
                                   shuffle=True,
                                   validation=True)
     model = build_model()
-    model.compile(loss='categorical_crossentropy', optimizer='adam')
+    model.compile(loss='categorical_crossentropy',
+                  optimizer='adam',
+                  metrics=[CategoricalAccuracy(name="accuracy")])
     model.fit(train_generator,
               steps_per_epoch=len(train_generator),
               epochs=args.epochs,
