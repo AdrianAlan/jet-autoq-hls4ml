@@ -149,7 +149,8 @@ if __name__ == '__main__':
                         help='Number of workers', dest='workers')
     args = parser.parse_args()
 
-    os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+    os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+    tf.get_logger().setLevel('ERROR')
 
     h5 = h5py.File(args.dataset_path, 'r')
     X_train = h5['X_train']
