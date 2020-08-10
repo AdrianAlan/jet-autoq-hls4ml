@@ -1,12 +1,13 @@
+import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+
 import argparse
 import h5py
 import matplotlib.pyplot as plt
 import numpy as np
-import os
 import tensorflow as tf
 import tensorflow_io as tfio
 
-from sklearn.metrics import roc_curve, auc
 from tensorflow.keras.callbacks import ModelCheckpoint, ReduceLROnPlateau
 from tensorflow.keras.metrics import CategoricalAccuracy
 from tensorflow.keras.models import Model, Sequential, load_model
@@ -19,6 +20,7 @@ from tensorflow.keras.layers import (
     Flatten,
     Input,
     MaxPooling2D)
+from sklearn.metrics import roc_curve, auc
 
 
 def build_model(input_shape=(100, 100, 1), drate=.25):
@@ -73,6 +75,8 @@ def evaluate(model, X_test, y_test, save_path='evaluation.png'):
 
 if __name__ == '__main__':
 
+    tf.get_logger().setLevel('ERROR')
+
     parser = argparse.ArgumentParser("Train the teacher's network")
     parser.add_argument('dataset_path', type=str, help='Path to dataset')
     parser.add_argument('save_path', type=str, help='Path to trained model')
@@ -87,9 +91,6 @@ if __name__ == '__main__':
     parser.add_argument('-w', '--workers', type=int, default='4',
                         help='Number of workers', dest='workers')
     args = parser.parse_args()
-
-    os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
-    tf.get_logger().setLevel('ERROR')
 
     X_train = tfio.IODataset.from_hdf5(args.dataset_path, "/X_train")
     y_train = tfio.IODataset.from_hdf5(args.dataset_path, "/y_train")
